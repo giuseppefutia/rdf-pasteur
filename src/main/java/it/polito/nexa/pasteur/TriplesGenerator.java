@@ -22,11 +22,18 @@ public class TriplesGenerator {
         DefaultJSONImporter dji = new DefaultJSONImporter();
         String roarModel = dji.getJSON("src/main/resources/roarmap-model.json", "FILE");
         String roarFunders = dji.getJSON("http://roarmap.eprints.org/cgi/exportview/policymaker_type/funder/JSON/funder.js", "URL");
-        String roarsUniversities = dji.getJSON("http://roarmap.eprints.org/cgi/exportview/policymaker_type/research=5Forg/JSON/research=5Forg.js", "URL");
+        String roarFundersResearch = dji.getJSON("http://roarmap.eprints.org/cgi/exportview/policymaker_type/funder=5Fand=5Fresearch=5Forg/JSON/funder=5Fand=5Fresearch=5Forg.js", "URL");
+        String roarMultipleResearchOrganization = dji.getJSON("http://roarmap.eprints.org/cgi/exportview/policymaker_type/multiple=5Fresearch=5Forgs/JSON/multiple=5Fresearch=5Forgs.js", "URL");
+        String roarUniversities = dji.getJSON("http://roarmap.eprints.org/cgi/exportview/policymaker_type/research=5Forg/JSON/research=5Forg.js", "URL");
+        String roarSubunit = dji.getJSON("http://roarmap.eprints.org/cgi/exportview/policymaker_type/research=5Forg=5Fsubunit/JSON/research=5Forg=5Fsubunit.js", "URL");
+
         PasteurTriplifier pt = new PasteurTriplifier();
         Model baseModel = createBaseModel();
         baseModel.add(pt.triplifyJSON(roarFunders, roarModel));
-        baseModel.add(pt.triplifyJSON(roarsUniversities, roarModel));
+        baseModel.add(pt.triplifyJSON(roarFundersResearch, roarModel));
+        baseModel.add(pt.triplifyJSON(roarMultipleResearchOrganization, roarModel));
+        baseModel.add(pt.triplifyJSON(roarUniversities, roarModel));
+        baseModel.add(pt.triplifyJSON(roarSubunit, roarModel));
         publishRDF("output/rdf.nt", baseModel);
         //publishOnVirtuoso();
     }
@@ -53,6 +60,7 @@ public class TriplesGenerator {
         file.mkdirs();
         OutputStream outTurtle = new FileOutputStream(new File(filePath));
         RDFDataMgr.write(outTurtle, model, RDFFormat.NTRIPLES);
+        System.out.println("printed!");
     }
 
     private static void publishOnVirtuoso() throws IOException {
