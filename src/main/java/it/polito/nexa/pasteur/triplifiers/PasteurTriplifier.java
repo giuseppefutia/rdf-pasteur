@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import java.io.IOException;
@@ -51,7 +52,13 @@ public class PasteurTriplifier implements JSONTriplifier{
 
             for (JsonNode node : rootInputJSON) {
                 // Create eprint URI
-                Resource eprintEntity = ResourceFactory.createResource(getValue("uri", node).replace("\"", ""));
+                String eprintURI = getValue("uri", node).replace("\"", "").split("http://roarmap.eprints.org/id/")[1];
+                Resource eprintEntity = ResourceFactory.createResource("http://roarmap.nexacenter.org/id/"+eprintURI);
+                Statement eprintSameAs = ResourceFactory.createStatement(eprintEntity, OWL.sameAs,
+                        ResourceFactory.createResource(getValue("uri", node).replace("\"", "")));
+
+                results.add(eprintSameAs);
+
                 Resource eprintType = ResourceFactory.createResource(BASE_URI + "ontology/" + getValue("type", node));
                 Statement eprint = ResourceFactory.createStatement(eprintEntity, RDF.type, eprintType);
                 results.add(eprint);
@@ -81,7 +88,6 @@ public class PasteurTriplifier implements JSONTriplifier{
         while (nodeIterator.hasNext()) {
             Map.Entry<String, JsonNode> entry = (Map.Entry<String, JsonNode>) nodeIterator.next();
             String propertyMap = getValue(entry.getKey().toString(), mapper);
-
             if(!propertyMap.equals("") && !propertyMap.equals("notSet")) {
                 Property property =  ResourceFactory.createProperty(getValue(entry.getKey().toString(), mapper));
                 Literal literal = ResourceFactory.createPlainLiteral(entry.getValue().toString().replace("\"", ""));
